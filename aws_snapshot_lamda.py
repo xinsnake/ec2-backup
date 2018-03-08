@@ -17,10 +17,12 @@
 #       list of regions to snapshot
 #   * retention_days (default: 2)
 #       integer number of days to keep snapshots. This is overridden by specifying a 'ec2_backup_count' tag on the VM with an integer of the number of backups to retain.
+#   * email_region:
+#       Specify the region of the SES client
 #   * email_to:
 #       Specify an email address to send the logs to
 #   * email_from:
-#        Specify an email address to send the emails from.
+#       Specify an email address to send the emails from.
 #
 #  Enabling backups: - Instances require a coule of tags:
 #   * ec2_backup_enabled:
@@ -37,6 +39,7 @@ from datetime import tzinfo, timedelta, datetime
 config = {
   "regions": ["us-west-1"],
   "retention_days": "7",
+  "email_region": "us-west-1"
   "email_from": "user@localhost.localdomain",
   "email_to": "you@localhost.localdomain"
 }
@@ -59,7 +62,7 @@ def getTagValue(key, tags):
 
 def emailLogBuffer(email_from, email_to, logbuf):
     email_subject = "EC2 Snapshot Backup Report - %s" % (datetime.now().strftime("%Y-%m-%d"))
-    client = boto3.client('ses')
+    client = boto3.client('ses', region_name=config["email_region"])
     client.send_email(
         Source = email_from,
         Destination = {
